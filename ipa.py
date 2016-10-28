@@ -78,7 +78,7 @@ def setParameter():
         m = hashlib.md5()
         m.update('BossZP')
         tempFinder = m.hexdigest()
-        mainPath = commendPath + 'Documents' + '/' + tempFinder
+        mainPath = target_path + '/' + tempFinder
     gitPath = raw_input("input gitPath:")
     certificateName = raw_input("input certificateName:")
     firToken = raw_input("input firToken:")
@@ -115,8 +115,8 @@ def setOptparse():
     #设置版本指令
     p.add_option('--tag','-t',default="master",help = "app's tag")
     options,arguments = p.parse_args()
-    global tag
-    tag = options.tag
+    # global tag
+    # tag = options.tag
     #配置信息
     if options.config == True and len(arguments) == 0 :
         configMethod()
@@ -256,7 +256,7 @@ def isFinderExists():
 
 #clone工程
 def gitClone():
-    os.system ('git clone %s %s --depth 1'%(gitPath,mainPath))
+    os.system ('git clone %s %s'%(gitPath,mainPath))
     return
     
 #显示所有版本
@@ -338,16 +338,17 @@ def buildApp():
         path=target.replace(name,"")
         path=path[0:len(path)-1]
         os.system("cd %s;xcodebuild -target %s CODE_SIGN_IDENTITY='%s'"%(path,name,certificateName))
+    os.system ("cd %s;rm -r -f %s.xcarchive"%(mainPath,targetName))
     if isWorkSpace:
-        os.system("cd %s;xcodebuild -workspace %s.xcworkspace -scheme %s CODE_SIGN_IDENTITY='%s' -derivedDataPath build/"%(mainPath,targetName,targetName,certificateName))
+        os.system("cd %s;xcodebuild archive -workspace %s.xcworkspace -scheme %s -configuration Release -archivePath %s/%s"%(mainPath,targetName,targetName,mainPath,targetName))
     else:
-        os.system("cd %s;xcodebuild -target %s CODE_SIGN_IDENTITY='%s'"%(mainPath,targetName,certificateName))
+        os.system("cd %s;xcodebuild archive -target %s -configuration Release -archivePath %s"%(mainPath,targetName,mainPath))
     return
     
 #创建ipa
 def cerateIPA():
     os.system ("cd %s;rm -r -f %s.ipa"%(mainPath,targetName))
-    os.system ("cd %s;xcrun -sdk iphoneos PackageApplication -v %s/build/Build/Products/Debug-iphoneos/%s.app -o %s/%s.ipa CODE_SIGN_IDENTITY='%s'"%(mainPath,mainPath,targetName,mainPath,targetName,certificateName))
+    os.system ("cd %s;xcodebuild -exportArchive -archivePath ./%s.xcarchive -exportPath %s/ -exportOptionsPlist chaoaicai.plist"%(mainPath,targetName,mainPath))
     return
     
 #上传
